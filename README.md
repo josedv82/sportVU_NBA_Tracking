@@ -34,9 +34,9 @@ For the sake of time, I am only looking at one play in this example but the calc
 *Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)  
 *Smoothing and resampling of data to minimise noise and help get more accurate calculations.
 
-### Limitatios
+### Limitations
 
-I didn't spend much time on this data, but some limitations I found were **1)** there are 25 data points per second, however there are different in time windows, which will affect the calculations of the above metrics. Looks like smoothing the time stamp and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not perfectly aligned, meaning some plays are missing, which would limit the ability to calculate demands for a full game for example.
+I only spent an afternoon on this, but some limitations I found were **1)** there are 25 data points per second, however there seems to be some noisy time windows, which will affect the calculations of the above metrics. Looks like smoothing the time stamp and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not perfectly align, meaning some plays are missing, which would limit the ability to calculate demands for a full game for example accurately.
 
 ### Added Image
 
