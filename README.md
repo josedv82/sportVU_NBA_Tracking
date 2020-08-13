@@ -2,7 +2,7 @@
 
 A working document looking at different physical metrics that can be derived from NBA plays using [SportVU](https://www.nbastuffer.com/analytics101/sportvu-data/) tracking data. 
 
-### Example Image
+### Dashboard Example
 
 Below is a dashboard looking at the motion of the actual play along with calculated acceleration and running speed for the Detroit Pistons players. 
 
