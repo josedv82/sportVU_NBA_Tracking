@@ -205,7 +205,7 @@ title <- all$descriptionPlayVisitor %>% unique()
 
 #animating the selected play via ggplot + gganimate
 
-  a <- fullcourt() + 
+  a <- fullcourt() + #function for fullcourt background https://github.com/rajshah4/NBA_SportVu/blob/master/_function_fullcourt.R
   geom_point(data = all, aes(x, y, fill = Team, group = Player, size = Size), shape = 21) +
   geom_text(data = all, aes(x, y, label = pID), size = 3) +
   
