@@ -1,3 +1,4 @@
 # sportVU NBA Athlete Tracking
 
-![](https://www.dropbox.com/s/y3uj5ul4vus5be3/combined.gif?raw=1])
+<img width="100%" src="https://www.dropbox.com/s/j635492d5pi01i4/play.gif?raw=1">
+
