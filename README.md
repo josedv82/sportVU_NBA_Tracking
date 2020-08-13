@@ -37,4 +37,10 @@ Look at peak demands for acceleration and speed for different periods of the gam
 
 Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
 
+### Added Image
+
+Combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play.
+
+![](combined.gif)
+
 
