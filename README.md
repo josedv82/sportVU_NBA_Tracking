@@ -33,3 +33,8 @@ For the sake of time, I am only looking at one play in this example but the calc
 
 Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)
 
+### Further Reading
+
+Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
+
+
