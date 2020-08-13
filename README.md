@@ -31,16 +31,21 @@ For the sake of time, I am only looking at one play in this example but the calc
 
 ### To Do
 
-Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)
+*Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)  
+*Smoothing and resampling of data to minimise noise and help get more accurate calculations.
 
-### Further Reading
+### Limitatios
 
-Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
+I didn't spend much time on this data, but some limitations I found were **1)** there are 25 data points per second, however there are different in time windows, which will affect the calculations of the above metrics. Looks like smoothing the time stamp and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not perfectly aligned, meaning some plays are missing, which would limit the ability to calculate demands for a full game for example.
 
 ### Added Image
 
-Combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play.
+I added a combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play.
 
 ![](combined.gif)
+
+### Further Reading / acknowledgements
+
+Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
 
 
