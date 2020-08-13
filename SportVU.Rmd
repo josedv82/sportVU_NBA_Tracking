@@ -1,3 +1,7 @@
+#NBA SportVU Tracking Workbook
+#Jose Fernandez
+#2020
+#########################################################
 
 ```{r message=FALSE, warning=FALSE}
 #Load the packages required to read JSON files.
