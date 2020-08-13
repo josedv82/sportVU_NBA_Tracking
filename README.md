@@ -48,6 +48,7 @@ I added a combined plot of raw acceleration and running speed for the Jodie Meek
 
 ### Further Reading / acknowledgements
 
-Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
+* Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
+* While I could not attend the conference, Dean Little presented some [very interesting work](https://twitter.com/Bballphysio/status/1256376460593381376) in this area at IPS2020 conference.
 
 
