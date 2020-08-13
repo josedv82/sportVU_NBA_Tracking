@@ -1,0 +1,526 @@
+
+```{r message=FALSE, warning=FALSE}
+#Load the packages required to read JSON files.
+library(rjson)
+library(tidyverse)
+library(nbastatR)
+library(gganimate)
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+#sportVU function to read json and convert to data fram
+sportvu_df <- function(path) {
+  cat("... reading game data.\n")
+  raw_game <- jsonlite::fromJSON(path)
+  game_id <- raw_game$gameid
+  cat("...... restructuring game info.\n")
+  var1 <- NULL
+  var2 <- NULL
+  var3 <- NULL
+  var4 <- NULL
+  var5 <- NULL
+  var6 <- NULL
+  var7 <- NULL
+  for (i in 1:length(raw_game$events$moments)) {
+    var1 <- append(var1, sapply(raw_game$events$moments[[i]], "[[", 1))
+    var2 <- append(var2, sapply(raw_game$events$moments[[i]], "[[", 2))
+    var3 <- append(var3, sapply(raw_game$events$moments[[i]], "[[", 3))
+    var4 <- append(var4, sapply(raw_game$events$moments[[i]], "[[", 4))
+    var5 <- append(var5, sapply(raw_game$events$moments[[i]], "[[", 5))
+    var6 <- append(var6, sapply(raw_game$events$moments[[i]], "[", 6))
+    var7 <- append(var7, rep(raw_game$events$eventId[i], length(raw_game$events$moments[[i]])))
+  }
+  var4 <- lapply(var4, function(x) {ifelse(is.null(x), NA, x)})
+  var5 <- lapply(var5, function(x) {ifelse(is.null(x), NA, x)})
+  var1 <- unlist(var1)
+  var2 <- unlist(var2)
+  var3 <- unlist(var3)
+  var4 <- unlist(var4)
+  var5 <- unlist(var5)
+
+  df <- data.frame(var1,var2,var3,var4,var5,var7,
+                   stringsAsFactors = FALSE)
+
+  cat("...... restructuring player info.\n")
+  format_player_info <- function(player_moment_matrix, home_id, away_id) {
+    b_sel <- which(player_moment_matrix[,1] == -1)
+    h_sel <- which(player_moment_matrix[,1] == home_id)
+    a_sel <- which(player_moment_matrix[,1] == away_id)
+    b_out <- player_moment_matrix[b_sel,]
+    h_out <- c(t(player_moment_matrix[h_sel,]))
+    a_out <- c(t(player_moment_matrix[a_sel,]))
+    if (length(b_out) < 5)
+      b_out <- c(b_out, rep(NA, 5 - length(b_out)))
+    if (length(h_out) < 25)
+      h_out <- c(h_out, rep(NA, 25 - length(h_out)))
+    if (length(a_out) < 25)
+      a_out <- c(a_out, rep(NA, 25 - length(a_out)))
+    out <- c(b_out, a_out, h_out)
+    return(out)
+  }
+
+  home_id <- raw_game$events$home$teamid[1]
+  away_id <- raw_game$events$visitor$teamid[1]
+
+  players_df <- lapply(var6, format_player_info, home_id = home_id, away_id = away_id)
+  players_df <- do.call("rbind", players_df)
+
+  cat("...... combining game/player info.\n")
+
+  ranges <- matrix(NA, nrow = 12, ncol = 2)
+  ranges[1,] <- range(players_df[,1], na.rm = T) == c(-1,-1)
+  ranges[2,] <- range(players_df[,2], na.rm = T) == c(-1,-1)
+  for (i in 1:10)
+    ranges[i+2,] <- range(players_df[,(10 + (i - 1) * 5)], na.rm = T) == c(0,0)
+
+  if (all(ranges)) {
+    col_nums <- c(1,2,seq(10,55,by=5))
+    players_df <- players_df[,-col_nums]
+  } else {
+    stop("Problem when dropping columns out of 'players_df' matrix.")
+  }
+  header <- c("quarter", "unknown1", "game_clock", "shot_clock", "unknown2", "event_id",
+              "x", "y", "z")
+  for (i in 1:5)
+    header <- append(header, c(paste0("a", i, "_team"), paste0("a", i, "_ent"), paste0("a", i, "_x"), paste0("a", i, "_y")))
+  for (i in 1:5)
+    header <- append(header, c(paste0("h", i, "_team"), paste0("h", i, "_ent"), paste0("h", i, "_x"), paste0("h", i, "_y")))
+  full_df <- data.frame(df, players_df, stringsAsFactors = FALSE)
+  colnames(full_df) <- header
+
+  full_df$event_id <- as.numeric(full_df$event_id)
+  return(full_df)
+}
+
+```
+
+```{r}
+#function to draw ful court
+fullcourt <- function () {
+  
+  palette(c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3",
+            "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"))
+  
+  #Generate Data for the 3 point linea
+  # Define the circle; add a point at the center if the 'pie slice' if the shape is to be filled
+  circleFun <- function(center=c(0,5.25), diameter=20.9, npoints=20000, start=0, end=1, filled=TRUE){
+    tt <- seq(start*pi, end*pi, length.out=npoints)
+    df <- data.frame(
+      y = center[1] + diameter / 2 * cos(tt),
+      x = center[2] + diameter / 2 * sin(tt)
+    )
+    return(df)
+  }
+  
+  halfCircle <- circleFun(c(0, 5.25), 20.9*2, start=0, end=1, filled=FALSE) 
+ggplot(data=data.frame(y=1,x=1),aes(x,y))+
+  ###halfcourt line:
+  geom_path(data=data.frame(x=c(47,47),y=c(0,50)))+
+  ###outside boy:
+  geom_path(data=data.frame(y=c(0,0,50,50,0),x=c(0,94,94,0,0)))+
+  ###solid FT semicircle above FT line:
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(19+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(75+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+  ###dashed FT semicircle below FT line:
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(19-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x),linetype='dashed')+
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(75-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x),linetype='dashed')+
+  ###kex:
+  geom_path(data=data.frame(y=c(17,17,33,33,17),x=c(0,19,19,0,0)))+
+  geom_path(data=data.frame(y=c(17,17,33,33,17),x=c(94,75,75,94,94)))+
+  ###boy inside the kex:
+  geom_path(data=data.frame(y=c(19,19,31,31,19),x=c(0,19,19,0,0)))+
+  geom_path(data=data.frame(y=c(19,19,31,31,19),x=c(94,75,75,94,94)))+
+  ###restricted area semicircle:
+  geom_path(data=data.frame(y=c((-4000:(-1)/1000)+25,(1:4000/1000)+25),x=c(5.25+sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(y=y,x=x))+
+  geom_path(data=data.frame(y=c((-4000:(-1)/1000)+25,(1:4000/1000)+25),x=c(88.75-sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(y=y,x=x))+
+  ###halfcourt semicircle:
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(47-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+  geom_path(data=data.frame(y=c((-6000:(-1)/1000)+25,(1:6000/1000)+25),x=c(47+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(y=y,x=x))+
+  ###rim:
+  geom_path(data=data.frame(y=c((-750:(-1)/1000)+25,(1:750/1000)+25,(750:1/1000)+25,(-1:-750/1000)+25),x=c(c(5.25+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(5.25-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(y=y,x=x))+
+  geom_path(data=data.frame(y=c((-750:(-1)/1000)+25,(1:750/1000)+25,(750:1/1000)+25,(-1:-750/1000)+25),x=c(c(88.75+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(88.75-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(y=y,x=x))+
+  ###backboard:
+  geom_path(data=data.frame(y=c(22,28),x=c(4,4)),lineend='butt')+
+  geom_path(data=data.frame(y=c(22,28),x=c(90,90)),lineend='butt')+
+  ###three-point line:
+  # geom_path(data=data.frame(y=c(-21,-21,-21000:(-1)/1000,1:21000/1000,21,21),x=c(0,169/12,5.25+sqrt(23.75^2-c(-21000:(-1)/1000,1:21000/1000)^2),169/12,0)),aes(y=y,x=x))+
+  ###fiy aspect ratio to 1:1
+  geom_path(data=halfCircle,aes(x=x,y=y+25))+
+  ###Complete the three-point line 
+  geom_path(data=data.frame(y=c(4.1,4.1,45.9,45.9),x=c(5.25,0,0,5.25)))+
+  geom_path(data=halfCircle,aes(x=94-x,y=y+25))+
+  geom_path(data=data.frame(y=c(4.1,4.1,45.9,45.9),x=c(88.75,94,94,88.75)))+
+  coord_fixed()+
+  
+  ###Clean up the Court 
+  theme_bw()+theme(panel.grid=element_blank(), legend.title=element_blank(), panel.border=element_blank(),axis.text=element_blank(),axis.ticks=element_blank(),axis.title=element_blank(),legend.position="none")}
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+#import and initial format of sportvu data
+
+sportVU <- sportvu_df("0021500001.json") 
+
+sport_VU <- sportVU %>%
+  select(quarter, game_clock, shot_clock, event_id, ball_x = x, ball_y = y, ball_z = z, Away_Team = a1_team, a1_id = a1_ent, a1_x, a1_y, a2_id = a2_ent, a2_x, a2_y, a3_id = a3_ent, a3_x, a3_y, a4_id = a4_ent, a4_x,a4_y, a5_id = a5_ent, a5_x, a5_y, Home_Team = h1_team, h1_id = h1_ent, h1_x, h1_y, h2_id = h2_ent, h2_x, h2_y, h3_id = h3_ent, h3_x, h3_y, h4_id = h4_ent, h4_x, h4_y, h5_id = h5_ent, h5_x, h5_y)
+
+```
+
+
+
+```{r message=FALSE, warning=FALSE}
+
+#code to gather nba api player ids
+
+#Loading Game Logs and Stats for each game in the last 3 seasons using NBAstatR function####
+statlogs <- game_logs(
+  seasons = 2015:2016,
+  league = "NBA",
+  result_types = "player",
+  season_types = "Regular Season",
+  nest_data = F,
+  assign_to_environment = F,
+  return_message = F
+)
+
+players <- statlogs %>% filter(idGame == 21500001) %>% select(Team = nameTeam, Player = namePlayer, player_id = idPlayer)
+
+a1 <- players %>% select(PA1 = Player, a1_id = player_id)
+a2 <- players %>% select(PA2 = Player, a2_id = player_id)
+a3 <- players %>% select(PA3 = Player, a3_id = player_id)
+a4 <- players %>% select(PA4 = Player, a4_id = player_id)
+a5 <- players %>% select(PA5 = Player, a5_id = player_id)
+h1 <- players %>% select(PH1 = Player, h1_id = player_id)
+h2 <- players %>% select(PH2 = Player, h2_id = player_id)
+h3 <- players %>% select(PH3 = Player, h3_id = player_id)
+h4 <- players %>% select(PH4 = Player, h4_id = player_id)
+h5 <- players %>% select(PH5 = Player, h5_id = player_id)
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+#code to get play by play ga,e stats data
+pbp <- play_by_play(game_ids = c(21500001), nest_data = F, return_message = T) %>% 
+  select(idGame, slugScore, slugTeamLeading, event_id = numberEvent, everything())
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#merging all tables (player id, play by play and sportVU)
+
+full_data <- full_join(pbp, sport_VU, by = c("event_id")) %>%
+  filter(event_id != 0) %>% 
+  
+  full_join(a1) %>%
+  full_join(a2) %>%
+  full_join(a3) %>%
+  full_join(a4) %>%
+  full_join(a5) %>%
+  full_join(h1) %>%
+  full_join(h2) %>%
+  full_join(h3) %>%
+  full_join(h4) %>%
+  full_join(h5) %>% 
+  
+  select(idGame,
+         slugScore,
+         scoreAway,
+         scoreHome,
+         slugTeamLeading,
+         event_id,
+         descriptionPlayHome,
+         descriptionPlayVisitor,
+         timeStringWC,
+         quarter,
+         timeQuarter,
+         minuteGame,
+         timeRemaining,
+         minuteRemainingQuarter,
+         secondsRemainingQuarter,
+         game_clock,
+         shot_clock,
+         Away_Team,
+         PA1, a1_x, a1_y,
+         PA2, a2_x, a2_y,
+         PA3, a3_x, a3_y,
+         PA4, a4_x, a4_y,
+         PA5, a5_x, a5_y,
+         Home_Team,
+         PH1, h1_x, h1_y,
+         PH2, h2_x, h2_y,
+         PH3, h3_x, h3_y,
+         PH4, h4_x, h4_y,
+         PH5, h5_x, h5_y,
+         ball_x, ball_y, ball_z) %>% 
+  filter(event_id != 26 & event_id != 203 & event_id != 204 & event_id != 217 & event_id != 318 & event_id != is.na(event_id)) %>%   filter(event_id == 388) #filter ona play
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#clean data for home team
+
+#game data
+game <- full_data %>% select(idGame, slugScore, scoreAway, scoreHome, slugTeamLeading, event_id, descriptionPlayHome, descriptionPlayVisitor, timeStringWC, quarter, timeQuarter, minuteGame, timeRemaining, minuteRemainingQuarter, secondsRemainingQuarter, game_clock, shot_clock)
+
+#away team
+away <- full_data %>% select(
+  event_id, game_clock, Away_Team, PA1, a1_x, a1_y,  PA2, a2_x, a2_y,  PA3, a3_x, a3_y,  PA4, a4_x, a4_y,  PA5, a5_x, a5_y)
+
+#home team
+home <- full_data %>% select(
+  event_id, game_clock, Home_Team, PH1, h1_x, h1_y,  PH2, h2_x, h2_y,  PH3, h3_x, h3_y,  PH4, h4_x, h4_y,  PH5, h5_x, h5_y)
+
+#ball team
+ball <- full_data %>% select(
+  event_id, game_clock, ball_x, ball_y, ball_z) %>%
+  mutate(Team = 0, Player = "Ball")
+
+```
+
+
+```{r}
+
+#gather players data
+PA1 <- away %>% select (event_id, game_clock, Team = Away_Team, Player = PA1, x = a1_x, y = a1_y) %>% mutate(pID = "1")
+PA2 <- away %>% select (event_id, game_clock, Team = Away_Team, Player = PA2, x = a2_x, y = a2_y) %>% mutate(pID = "2")
+PA3 <- away %>% select (event_id, game_clock, Team = Away_Team, Player = PA3, x = a3_x, y = a3_y) %>% mutate(pID = "3")
+PA4 <- away %>% select (event_id, game_clock, Team = Away_Team, Player = PA4, x = a4_x, y = a4_y) %>% mutate(pID = "4")
+PA5 <- away %>% select (event_id, game_clock, Team = Away_Team, Player = PA5, x = a5_x, y = a5_y) %>% mutate(pID = "5")
+PH1 <- home %>% select (event_id, game_clock, Team = Home_Team, Player = PH1, x = h1_x, y = h1_y) %>% mutate(pID = "1")
+PH2 <- home %>% select (event_id, game_clock, Team = Home_Team, Player = PH2, x = h2_x, y = h2_y) %>% mutate(pID = "2")
+PH3 <- home %>% select (event_id, game_clock, Team = Home_Team, Player = PH3, x = h3_x, y = h3_y) %>% mutate(pID = "3")
+PH4 <- home %>% select (event_id, game_clock, Team = Home_Team, Player = PH4, x = h4_x, y = h4_y) %>% mutate(pID = "4")
+PH5 <- home %>% select (event_id, game_clock, Team = Home_Team, Player = PH5, x = h5_x, y = h5_y) %>% mutate(pID = "5")
+
+playerss <- full_join(PA1, PA2) %>%
+  full_join(PA3) %>%
+  full_join(PA4) %>%
+  full_join(PA5) %>%
+  full_join(PH1) %>%
+  full_join(PH2) %>%
+  full_join(PH3) %>%
+  full_join(PH4) %>%
+  full_join(PH5) 
+
+#gather ball data
+ball.c <- ball %>% select(event_id, game_clock, Team, Player, x = ball_x, y = ball_y, z = ball_z) %>% mutate(pID = "")
+
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+all <- full_join(playerss, ball.c) %>% 
+  full_join(game) %>%
+  mutate(Team = ifelse(Team == 1610612765, "Pistons",
+                ifelse(Team == 1610612737, "Hawks", "Ball"))) %>%
+  arrange(-game_clock) %>%
+  mutate(Size = ifelse(Player == "Ball", "a", "b")) #%>%
+  
+  #filter(game_clock == 593.28)
+
+
+#this part is used for the annotation layers of the plot
+all1 <- all %>% filter(Team == "Pistons" & pID == "1") %>% select(pID, Player) %>% distinct()
+all2 <- all %>% filter(Team == "Pistons" & pID == "2") %>% select(pID, Player) %>% distinct()
+all3 <- all %>% filter(Team == "Pistons" & pID == "3") %>% select(pID, Player) %>% distinct()
+all4 <- all %>% filter(Team == "Pistons" & pID == "4") %>% select(pID, Player) %>% distinct()
+all5 <- all %>% filter(Team == "Pistons" & pID == "5") %>% select(pID, Player) %>% distinct()
+
+all11 <- all %>% filter(Team == "Hawks" & pID == "1") %>% select(pID, Player) %>% distinct()
+all22 <- all %>% filter(Team == "Hawks" & pID == "2") %>% select(pID, Player) %>% distinct()
+all33 <- all %>% filter(Team == "Hawks" & pID == "3") %>% select(pID, Player) %>% distinct()
+all44 <- all %>% filter(Team == "Hawks" & pID == "4") %>% select(pID, Player) %>% distinct()
+all55 <- all %>% filter(Team == "Hawks" & pID == "5") %>% select(pID, Player) %>% distinct()
+
+title <- all$descriptionPlayVisitor %>% unique()
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#animating the selected play
+
+  a <- fullcourt() + 
+  geom_point(data = all, aes(x, y, fill = Team, group = Player, size = Size), shape = 21) +
+  geom_text(data = all, aes(x, y, label = pID), size = 3) +
+  
+  annotate("point", x = 97.6, y = 39.8, color = "deepskyblue", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 36.8, color = "deepskyblue", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 33.8, color = "deepskyblue", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 30.8, color = "deepskyblue", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 27.8, color = "deepskyblue", hjust = 0, size = 4) +
+  
+  annotate("point", x = 97.6, y = 16.8, color = "#C1D32F", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 13.8, color = "#C1D32F", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 10.8, color = "#C1D32F", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 7.8, color = "#C1D32F", hjust = 0, size = 4) +
+  annotate("point", x = 97.6, y = 4.8, color = "#C1D32F", hjust = 0, size = 4) +
+  
+  annotate("text", x = 96.5, y = 45, label = "Pistons", color = "deepskyblue", hjust = 0, size = 5) +
+  annotate("text", x = 97, y = 40, label = paste(all1$pID, "  ", all1$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 37, label = paste(all2$pID, "  ", all2$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 34, label = paste(all3$pID, "  ", all3$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 31, label = paste(all4$pID, "  ", all4$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 28, label = paste(all5$pID, "  ", all5$Player, sep =""), hjust = 0, size = 3) +
+  
+  annotate("text", x = 96.5, y = 22, label = "Hawks", color = "#C1D32F", hjust = 0, size = 5) +
+  annotate("text", x = 97, y = 17, label = paste(all11$pID, "  ", all11$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 14, label = paste(all22$pID, "  ", all22$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 11, label = paste(all33$pID, "  ", all33$Player, sep =""), hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 8, label = paste(all44$pID, "  ", all44$Player, sep =""),  hjust = 0, size = 3) +
+  annotate("text", x = 97, y = 5, label = paste(all55$pID, "  ", all55$Player, sep =""),  hjust = 0, size = 3) +
+  
+  annotate("text", x = 0, y = -5, label = "DET @ ATL: Oct 27th, 2015", color = "darkgrey", hjust = 0, size = 3) +
+  
+  
+  scale_fill_manual(name = "Teams", labels = c("Ball", "Hawks", "Pistons"), values = c("orange", "#C1D32F", "deepskyblue")) +
+  xlim(0, 120) +
+  
+  labs(title = paste("     ", title)) +
+  
+  transition_time(desc(all$game_clock)) + ease_aes('linear')
+
+animate(a, duration = 15, fps = 25)
+```
+
+
+```{r fig.height=2, fig.width=8, message=FALSE, warning=FALSE}
+
+#calculating distance for the selected play
+all %>% 
+  select(Team, Player, x, y) %>%
+  group_by(Team, Player) %>%
+  mutate(diffx = c(NA, diff(x)), diffy = c(NA, diff(y))) %>%
+  filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
+  mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
+  mutate(total2 = diffx2 + diffy2) %>%
+  mutate(dist = sqrt(total2)) %>%
+  summarise(`Distance (ft)` = round(sum(dist),1)) %>%
+  arrange(desc(`Distance (ft)`)) %>%
+  filter(Team != "Ball") %>%
+  formattable::formattable() %>%
+  formattable::as.datatable()
+  
+#calculating and ploting velocity every quarter of a second
+all.velo <- all %>% 
+  select(game_clock, Team, Player, x, y) %>%
+  group_by(Team, Player) %>%
+  mutate(diffx = c(NA, diff(x)), diffy = c(NA, diff(y))) %>%
+  filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
+  mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
+  mutate(total2 = diffx2 + diffy2) %>%
+  mutate(`vel (f/s)` = sqrt(total2) / 0.04) %>%
+  select(Team, Player, game_clock, `vel (f/s)`) %>%
+  filter(Team == "Pistons")
+
+  b <- ggplot(data = all.velo, aes(game_clock, `vel (f/s)`)) +
+  annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
+  geom_line(aes(color = `vel (f/s)`), size = 1.5) +
+  geom_text(aes(label = paste(round(`vel (f/s)`,1), " ft/s")), hjust = -0.5) +  
+  scale_x_reverse() +
+  viridis::scale_color_viridis(option = "B") +
+  facet_wrap(~Player, ncol = 1) +
+  xlab("") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        strip.text = element_text(hjust = 0),
+        panel.grid = element_blank(),
+        axis.text = element_blank()) +
+  transition_reveal(desc(game_clock))
+  
+  animate(b, duration = 15, fps = 25)
+         
+ #calculating and ploting acceleration 
+all.acc <- all %>% 
+  select(game_clock, Team, Player, x, y) %>%
+  group_by(Team, Player) %>%
+  mutate(diffx = c(NA, NA, diff(x, differences = 2)), diffy = c(NA, NA, diff(y, differences = 2))) %>%
+  filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
+  mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
+  mutate(total2 = diffx2 + diffy2) %>%
+  mutate(`ACC` = sqrt(total2) / 0.04 / 0.04) %>%
+  select(Team, Player, game_clock, `ACC`) %>%
+  filter(Team == "Pistons")
+
+
+  c <- ggplot(data = all.acc, aes(game_clock, `ACC`)) +
+  annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
+  geom_line(aes(color = ACC), size = 1) +
+  geom_text(aes(label = paste(round(ACC,1), " ft/s2")), hjust = -0.5) +
+  scale_x_reverse() +
+  viridis::scale_color_viridis(option = "B") +
+  facet_wrap(~Player, ncol = 1) +
+  xlab("") +
+  theme_minimal() +
+   theme(legend.position = "none",
+        strip.text = element_text(hjust = 0),
+        panel.grid = element_blank(),
+        axis.text = element_blank()) + 
+        transition_reveal(desc(game_clock))
+  
+  animate(c, duration = 15, fps = 25)
+
+```
+
+```{r}
+#combine plot for  acc + velo
+
+JM.v <- all.velo %>% filter(Player == "Jodie Meeks")
+JM.a <- all.acc %>% filter(Player == "Jodie Meeks")
+
+JM <- full_join(JM.v, JM.a) %>%
+  na.omit() %>%
+  gather(Metric, Value, -Team, -Player, -game_clock)
+  
+  JMplot <- ggplot(data = JM, aes(game_clock, Value)) +
+  annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
+  geom_line(aes(color = Metric), size = 1) +
+  geom_text(aes(label = paste(round(Value,1)), color = Metric), hjust = -0.5) +
+  scale_x_reverse() +
+  ylab("acc (ft/s2) & vel (ft/s)") +
+  theme_minimal() +
+   theme(panel.grid = element_blank(),
+        axis.text = element_blank(),
+        legend.position="bottom") + 
+        transition_reveal(desc(game_clock))
+  
+   animate(JMplot, duration = 15, fps = 25)
+
+```
+
+
+```{r}
+#create rolling average for one player
+
+JM.mov <- JM %>% ungroup() %>%
+  filter(Metric != "vel (f/s)") %>%
+  mutate(`4_m.avg` = zoo::rollmean(Value, k = 4, fill = NA, align = "right"),
+         `8_m.avg` = zoo::rollmean(Value, k = 8, fill = NA, align = "right"),
+         `12_m.avg` = zoo::rollmean(Value, k = 12, fill = NA, align = "right")) %>%
+  select(game_clock, `4_m.avg`, `8_m.avg`, `12_m.avg`) %>%
+  gather(Metric, Value, -game_clock)
+  
+ggplot(data = JM.mov, aes(game_clock, Value)) +
+  geom_line(aes(color = Metric), size = 1) +
+  scale_x_reverse() +
+  ylab("Acceleration Windows") +
+  facet_wrap(~Metric) +
+  theme_minimal() +
+   theme(panel.grid = element_blank())
+
+
+```
+
+
+
+
+
