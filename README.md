@@ -46,9 +46,11 @@ I only spent an afternoon on this, but some limitations I found were **1)** ther
 
 ![](fastbreakspeed.PNG)
 
-##### 2. Combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play.
+##### 2. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
 
 ![](combined.gif)
+
+*Code for these images available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)
 
 ### Further Reading / acknowledgements
 
