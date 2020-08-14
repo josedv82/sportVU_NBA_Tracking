@@ -38,7 +38,7 @@ To speed things up, I am only looking at one play in this example but the calcul
 
 ### Limitations
 
-I only spent an afternoon on this, but some limitations I found were **1)** there are 25 data points per second, however there seems to be some noisy time windows, which will affect the calculations of the above metrics. Looks like smoothing the time stamp and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not always align, meaning there is a mismatch or even some plays are missing, which would limit the ability to calculate demands for a full game for example accurately.
+I only spent an afternoon on this, but some limitations I found were **1)** there are 25 data points per second, however there seems to be some noisy time intervals, which will affect the calculations of the above metrics. Maybe smoothing the time intervals and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not align for all plays, meaning there is a mismatch in some cases or even some plays missing, which limits the ability to calculate demands for longer periods of time or across plays, quarters, etc...
 
 ### Some other examples of visuals
 
