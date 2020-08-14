@@ -29,7 +29,7 @@ To speed things up, I am only looking at one play in this example but the calcul
 * Distance, Acceleration and Running speed calculations
 * GGplot visuals of these metrics
 
-All code available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)
+*All code available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)*
 
 ### To Do
 
@@ -50,7 +50,7 @@ I only spent an afternoon on this, but some limitations I found were **1)** ther
 
 ![](combined.gif)
 
-*Code for these images available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)
+*Code for these images available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)*
 
 ### Further Reading / acknowledgements
 
