@@ -48,7 +48,6 @@ I only spent an afternoon on this, but some limitations I found were **1)** ther
 
 ##### 2. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
 
-While I can't find video of this play, the three spikes on acceleration seems to align with 1st and 2nd steps plus landing after the layup.
 ![](combined.gif)
 
 *Code for these images available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)*
