@@ -354,4 +354,44 @@ JM <- full_join(JM.v, JM.a) %>%
 ```
 
 
+```{r fig.height=5, fig.width=15, message=FALSE, warning=FALSE}
+#acc in space
+dat <- all.acc %>% 
+  group_by(Player) %>%
+  filter(row_number() %% 3 == 1) #select every4th row so minimize point overlapping
+ 
+  fullcourt() +
+  geom_point(data = dat, aes(x,y, color = ACC), alpha = 3) +
+  facet_wrap(~Player, ncol = 5) +
+   scale_color_gradientn(colours = c("yellow", "red")) +
+   labs(title = "   Acceleration in space", subtitle = "   Plotting acceleration across x/y coordinates. n/") +
+    coord_flip() +
+    scale_y_reverse() +
+    theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          legend.position = "none",
+          plot.subtitle = element_text(color = "gray"),
+          panel.grid = element_blank())
+  
+#velo in space
+dat <- all.velo %>% 
+  filter(game_clock < 591 & game_clock > 585) %>% #remove defensive part of the play for pistons
+  group_by(Player) %>%
+  filter(row_number() %% 4 == 1) #select every4th row so minimize point overlapping
+ 
+  fullcourt() +
+  geom_point(data = dat, aes(x,y, color = `vel (f/s)`), alpha = 3, size = 2) +
+  facet_wrap(~Player, ncol = 5) +
+   scale_color_gradientn(colours = c("yellow", "red")) +
+   labs(title = "   Pistons Fast Break Individual Running Speeds & Trajectories", subtitle = "    Plotting running across x/y coordinates. \n @jfernandez__") +
+    coord_flip() + 
+    scale_y_reverse() +
+   theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          #legend.position = "none",
+          plot.subtitle = element_text(color = "gray30"),
+          panel.grid = element_blank())
 
+```
