@@ -40,9 +40,13 @@ All code available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/
 
 I only spent an afternoon on this, but some limitations I found were **1)** there are 25 data points per second, however there seems to be some noisy time windows, which will affect the calculations of the above metrics. Looks like smoothing the time stamp and resampling afterwards may be required and **2)** the sportVU and play-by-play data do not always align, meaning there is a mismatch or even some plays are missing, which would limit the ability to calculate demands for a full game for example accurately.
 
-### Added Image
+### Added Images
 
-I added a combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play. All images and code are available in the rmarkdown file provided.
+##### 1. Individual running speeds for the offensive part of the play
+
+![](fastbreakspeed.PNG)
+
+##### 2. Combined plot of raw acceleration and running speed for the Jodie Meeks and the selected play.
 
 ![](combined.gif)
 
