@@ -35,7 +35,7 @@ To speed things up, I am only looking at this one play for this example but the 
 
 * Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)  
 * Smoothing and over-sampling of data to minimise noise and help get more accurate calculations.
-* Small shiny app that let users choose a game, filter by play and visualize all plots.
+* Small shiny app that let users choose a game, filter by play and visualize all plots as well as summaries of distance, time, mean and top sunning speed.
 
 ### Limitations
 
