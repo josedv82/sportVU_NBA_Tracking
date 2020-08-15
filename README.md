@@ -10,7 +10,7 @@ Below is a dashboard looking at the motion of the actual play along with calcula
 
 ### Data
 
-SportVU in no longer used in the NBA, however a subset of games for the 2015/16 season can be found [here](https://github.com/linouk23/NBA-Player-Movements/tree/master/data/2016.NBA.Raw.SportVU.Game.Logs)
+SportVU in no longer used in the NBA, however a subset of games for the 2015/16 season can be found [here](https://github.com/rajshah4/BasketballData/tree/master/2016.NBA.Raw.SportVU.Game.Logs)
 
 ### Importing data
 
