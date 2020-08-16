@@ -33,6 +33,7 @@ To speed things up, I am only looking at this one play for this example but the 
 
 ### To Do
 
+* Add metabolic power calculations
 * Look at peak demands for acceleration and speed for different periods of the game. Similar to this [study](https://pubmed.ncbi.nlm.nih.gov/26023738/)  
 * Smoothing and over-sampling of data to minimise noise and help get more accurate calculations.
 * Small shiny app that let users choose a game, filter by play and visualize all plots as well as summaries of distance, time, mean and top running speed.
@@ -57,5 +58,6 @@ I am not super familiar with this data (only spent an afternoon on this), but so
 
 * Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
 * While I could not attend the conference, [Dean Little](https://twitter.com/DeanLittle) presented some [very interesting work](https://twitter.com/Bballphysio/status/1256376460593381376) in this area along with practical applications at IPS2020 conference.
+* Reference for [equations](https://dash.harvard.edu/bitstream/handle/1/38811493/CHASE-SENIORTHESIS-2017.pdf?sequence=3) 
 
 
