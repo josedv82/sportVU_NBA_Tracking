@@ -6,7 +6,7 @@ A working document looking at different physical metrics that can be derived fro
 
 Below is a dashboard looking at the motion of the actual play along with calculated acceleration and running speed for the Detroit Pistons players. 
 
-![](play.gif)  
+![](Play388.gif)  
 
 ### Data
 
