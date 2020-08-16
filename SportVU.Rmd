@@ -352,7 +352,7 @@ dat <- all.vel.acc %>%
   filter(game_clock < 591 & game_clock > 585) %>% #remove defensive part of the play for pistons
   group_by(Player) %>%
   filter(row_number() %% 4 == 1) %>% #select every4th row so minimize point overlapping
-  filter(ACC < 40 & ACC > -40) # removes acc outliers due to noise 
+  filter(ACC < 40 & ACC > -40) # removes acc outliers due to noise (check Harvard paper cited for reference on these threshold)
  
   fullcourt() +
   geom_point(data = dat, aes(x,y, color = ACC), alpha = 3) +
