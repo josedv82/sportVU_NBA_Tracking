@@ -254,6 +254,7 @@ animate(a, duration = 15, fps = 25)
 #calculating distance for the selected play
 all %>% 
   select(Team, Player, x, y) %>%
+  arrange(Player) %>%
   group_by(Team, Player) %>%
   mutate(diffx = c(NA, diff(x)), diffy = c(NA, diff(y))) %>%
   filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
@@ -266,8 +267,8 @@ all %>%
   formattable::formattable() %>%
   formattable::as.datatable()
   
-#calculating and ploting velocity every quarter of a second
-all.velo <- all %>% 
+#calculating and ploting velocity and acceleration every quarter of a second
+all.vel.acc <- all %>% 
   select(game_clock, Team, Player, x, y) %>%
   group_by(Team, Player) %>%
   mutate(diffx = c(NA, diff(x)), diffy = c(NA, diff(y))) %>%
@@ -275,10 +276,12 @@ all.velo <- all %>%
   mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
   mutate(total2 = diffx2 + diffy2) %>%
   mutate(`vel (f/s)` = sqrt(total2) / 0.04) %>%
-  select(Team, Player, game_clock, `vel (f/s)`) %>%
+  select(Team, Player, x, y, game_clock, `vel (f/s)`) %>%
+  mutate(ACC = c(NA, diff(`vel (f/s)`))) %>%
+  mutate(ACC = ACC / 0.04) %>%
   filter(Team == "Pistons")
 
-  b <- ggplot(data = all.velo, aes(game_clock, `vel (f/s)`)) +
+  b <- ggplot(data = all.vel.acc, aes(game_clock, `vel (f/s)`)) +
   annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
   geom_line(aes(color = `vel (f/s)`), size = 1.5) +
   geom_text(aes(label = paste(round(`vel (f/s)`,1), " ft/s")), hjust = -0.5) +  
@@ -295,20 +298,8 @@ all.velo <- all %>%
   
   animate(b, duration = 15, fps = 25)
          
- #calculating and ploting acceleration 
-all.acc <- all %>% 
-  select(game_clock, Team, Player, x, y) %>%
-  group_by(Team, Player) %>%
-  mutate(diffx = c(NA, NA, diff(x, differences = 2)), diffy = c(NA, NA, diff(y, differences = 2))) %>%
-  filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
-  mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
-  mutate(total2 = diffx2 + diffy2) %>%
-  mutate(`ACC` = sqrt(total2) / 0.04 / 0.04) %>%
-  select(Team, Player, game_clock, `ACC`) %>%
-  filter(Team == "Pistons")
 
-
-  c <- ggplot(data = all.acc, aes(game_clock, `ACC`)) +
+  c <- ggplot(data = all.vel.acc, aes(game_clock, `ACC`)) +
   annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
   geom_line(aes(color = ACC), size = 1) +
   geom_text(aes(label = paste(round(ACC,1), " ft/s2")), hjust = -0.5) +
@@ -330,12 +321,10 @@ all.acc <- all %>%
 ```{r}
 #combined plot for  acc + running speed
 
-JM.v <- all.velo %>% filter(Player == "Jodie Meeks")
-JM.a <- all.acc %>% filter(Player == "Jodie Meeks")
-
-JM <- full_join(JM.v, JM.a) %>%
-  na.omit() %>%
-  gather(Metric, Value, -Team, -Player, -game_clock)
+JM <- all.vel.acc %>% ungroup() %>%
+  filter(Player == "Jodie Meeks") %>%
+  select(game_clock, `vel (f/s)`, ACC) %>%
+  gather(Metric, Value, -game_clock)
   
   JMplot <- ggplot(data = JM, aes(game_clock, Value)) +
   annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
@@ -356,9 +345,11 @@ JM <- full_join(JM.v, JM.a) %>%
 
 ```{r fig.height=5, fig.width=15, message=FALSE, warning=FALSE}
 #acc in space
-dat <- all.acc %>% 
+dat <- all.vel.acc %>% 
+  filter(game_clock < 591 & game_clock > 585) %>% #remove defensive part of the play for pistons
   group_by(Player) %>%
-  filter(row_number() %% 3 == 1) #select every4th row so minimize point overlapping
+  filter(row_number() %% 4 == 1) %>% #select every4th row so minimize point overlapping
+  filter(ACC < 40 & ACC > -40) # removes acc outliers due to noise 
  
   fullcourt() +
   geom_point(data = dat, aes(x,y, color = ACC), alpha = 3) +
@@ -375,7 +366,7 @@ dat <- all.acc %>%
           panel.grid = element_blank())
   
 #velo in space
-dat <- all.velo %>% 
+dat <- all.vel.acc %>% 
   filter(game_clock < 591 & game_clock > 585) %>% #remove defensive part of the play for pistons
   group_by(Player) %>%
   filter(row_number() %% 4 == 1) #select every4th row so minimize point overlapping
