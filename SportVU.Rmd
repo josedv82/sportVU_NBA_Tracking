@@ -268,6 +268,8 @@ all %>%
   formattable::as.datatable()
   
 #calculating and ploting velocity and acceleration every quarter of a second
+
+#data prep
 all.vel.acc <- all %>% 
   select(game_clock, Team, Player, x, y) %>%
   group_by(Team, Player) %>%
@@ -281,6 +283,7 @@ all.vel.acc <- all %>%
   mutate(ACC = ACC / 0.04) %>%
   filter(Team == "Pistons")
 
+#velocity plot
   b <- ggplot(data = all.vel.acc, aes(game_clock, `vel (f/s)`)) +
   annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
   geom_line(aes(color = `vel (f/s)`), size = 1.5) +
@@ -298,7 +301,7 @@ all.vel.acc <- all %>%
   
   animate(b, duration = 15, fps = 25)
          
-
+#acceleration plot
   c <- ggplot(data = all.vel.acc, aes(game_clock, `ACC`)) +
   annotate("rect", xmin = 591, xmax = 584.5, ymin = -Inf, ymax = Inf, fill = "steelblue", alpha = 0.1) +
   geom_line(aes(color = ACC), size = 1) +
