@@ -267,7 +267,7 @@ all %>%
   formattable::formattable() %>%
   formattable::as.datatable()
   
-#calculating and ploting velocity and acceleration every quarter of a second
+#calculating and ploting velocity and acceleration
 
 #data prep
 all.vel.acc <- all %>% 
