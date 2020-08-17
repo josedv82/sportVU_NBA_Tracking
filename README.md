@@ -52,7 +52,11 @@ I am not super familiar with this data (only spent an afternoon on this), but so
 
 ![](acc.smooth.png)
 
-##### 3. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
+##### 3. Location of High Intensity Efforts (ACC/DEC) as per anomaly plot
+
+![](acc.loc.png)
+
+##### 4. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
 
 ![](combined.gif)
 
