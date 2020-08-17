@@ -50,7 +50,7 @@ I am not super familiar with this data (only spent an afternoon on this), but so
 
 ##### 2. Smoothed Acceleration + anomaly detection
 
-![](acc.smooth.PNG)
+![](acc.smooth.png)
 
 ##### 3. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
 
