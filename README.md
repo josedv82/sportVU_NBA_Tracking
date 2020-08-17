@@ -44,19 +44,19 @@ I haven't spent much time with these data, but some limitations I found were **1
 
 ### Some other examples of visuals
 
-##### 1. Individual running speeds for the offensive part of the play
+##### 1. Individual running speeds for the offensive part of the play id: 388
 
 ![](fastbreakspeed.PNG)
 
-##### 2. Smoothed Acceleration + anomaly detection
+##### 2. Smoothed Acceleration + anomaly detection for play id: 388
 
 ![](acc.smooth.png)
 
-##### 3. Location of High Intensity Efforts (ACC/DEC) as per anomaly plot
+##### 3. Location of High Intensity Efforts (ACC/DEC) based on above anomaly plot for play id: 388
 
 ![](acc.loc.png)
 
-##### 4. Combined plot of raw acceleration and running speed for Jodie Meeks and the selected play.
+##### 4. Combined plot of raw acceleration and running speed for Jodie Meeks for play id: 388
 
 ![](combined.gif)
 
