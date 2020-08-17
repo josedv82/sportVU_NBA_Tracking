@@ -429,3 +429,31 @@ ggplot(all.acc, aes(x = game_clock, y = mov)) +
   theme(panel.grid = element_blank())
 
 ``` 
+
+```{r fig.height=5, fig.width=15, message=FALSE, warning=FALSE}
+
+#find location of high intensity efforts from anomaly plot.
+
+acc.fil <- df_stat_anom %>%
+  filter(is_low_percentile == "TRUE" | is_high_percentile == "TRUE") %>%
+  arrange(Player, -game_clock) %>%
+  mutate(game_clock = round(game_clock,0)) %>%
+  select(Player, game_clock, x, y, is_low_percentile, is_high_percentile) %>%
+  gather(Metric, Value, -Player, -game_clock, -x, -y) %>%
+  group_by(Player, game_clock) %>%
+  summarise(x = mean(x), y = mean(y))
+  
+  fullcourt() +
+  geom_point(data = acc.fil, aes(x,y), alpha = 3, size = 3, color = "red") +
+  facet_wrap(~Player, ncol = 5) +
+   labs(title = "   Pistons High Effort Locations", subtitle = "    Averaged Location (per second) of top intensity efforts for the play. \n") +
+    coord_flip() + 
+    scale_y_reverse() +
+   theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          legend.position = "none",
+          plot.subtitle = element_text(color = "gray30"),
+          panel.grid = element_blank())
+
+```
