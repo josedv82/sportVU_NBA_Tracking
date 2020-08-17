@@ -434,7 +434,7 @@ ggplot(all.acc, aes(x = game_clock, y = mov)) +
 
 #find location of high intensity efforts from anomaly plot.
 
-acc.fil <- df_stat_anom %>%
+acc.fil <- all.acc %>%
   filter(is_low_percentile == "TRUE" | is_high_percentile == "TRUE") %>%
   arrange(Player, -game_clock) %>%
   mutate(game_clock = round(game_clock,0)) %>%
