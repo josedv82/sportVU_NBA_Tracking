@@ -59,7 +59,7 @@ I haven't spent much time with these data, but some limitations I found were **1
 ##### 4. A-V (Acc-Vel) Profiles  - inspired on JB Morin's [work](https://jbmorin.net/2020/08/02/the-in-situ-sprint-profile-for-team-sports-testing-players-without-testing-them/)
 
 ![](A-V.profiles.png)
-`Disclaimer: I am still reviewing the process and some of the assumptions I made to create these A-V profiles. Just showing present work here but likely will change over time.`
+`Disclaimer: I am still reviewing the process and some of the assumptions I made to create these A-V profiles. Just showing present work here but likely will change   over time.`
 
   
    
