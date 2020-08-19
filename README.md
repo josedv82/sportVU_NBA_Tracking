@@ -56,9 +56,11 @@ I haven't spent much time with these data, but some limitations I found were **1
 
 ![](acc.loc.png)
 
-##### 4. Combined plot of raw acceleration and running speed for Jodie Meeks for play id: 388
+##### 4. A-V (Acc-Vel) Profiles (inspired on JB Morin's [work](https://jbmorin.net/2020/08/02/the-in-situ-sprint-profile-for-team-sports-testing-players-without-testing-them/)
 
-![](combined.gif)
+![](A-V.profiles.png)
+`Disclaimer: The A-V work here still requires more work to build more robust profiles. I am reviewing this at the moment.`
+
 
 *Code for these images available [here](https://github.com/josedv82/sportVU_NBA_Tracking/blob/master/SportVU.Rmd)*
 
@@ -66,6 +68,7 @@ I haven't spent much time with these data, but some limitations I found were **1
 
 * Rajiv Shah's [github page](https://github.com/rajshah4) is a great resource and highly recommended.
 * While I could not attend the conference, [Dean Little](https://twitter.com/DeanLittle) presented some [very interesting work](https://twitter.com/Bballphysio/status/1256376460593381376) in this area along with practical applications at IPS2020 conference.
-* Reference for [equations](https://dash.harvard.edu/bitstream/handle/1/38811493/CHASE-SENIORTHESIS-2017.pdf?sequence=3) 
+* Reference for [equations](https://dash.harvard.edu/bitstream/handle/1/38811493/CHASE-SENIORTHESIS-2017.pdf?sequence=3)
+* Further reading on creating this type of A-V profiles [here](https://jbmorin.net/2020/08/02/the-in-situ-sprint-profile-for-team-sports-testing-players-without-testing-them/)
 
 
