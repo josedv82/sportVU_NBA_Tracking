@@ -486,9 +486,9 @@ acc.fil <- all.acc %>%
   mutate(ACC = c(NA, diff(`vel (f/s)`))) %>%
   mutate(ACC = ACC / 0.04) %>%
   mutate(vel = `vel (f/s)` * 0.3048, acc =  ACC * 0.3048) %>%
-  filter(acc > 0 & acc < 10) %>%
-  filter(vel > 0 & vel < 10) %>%
-  mutate(mov.vel = zoo::rollapply(vel, 25, mean, fill = NA), mov.acc = zoo::rollapply(acc, 25, mean, fill = NA))
+  filter(acc > 1 & acc < 10) %>%
+  filter(vel > 1 & vel < 10) %>%
+  mutate(mov.vel = zoo::rollapply(vel, 5, mean, fill = NA), mov.acc = zoo::rollapply(acc, 5, mean, fill = NA))
 
   #find top n accelerations for the game and calculate average
   FV.fit.a <- FV %>%
