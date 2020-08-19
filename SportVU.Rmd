@@ -457,3 +457,74 @@ acc.fil <- all.acc %>%
           panel.grid = element_blank())
 
 ```
+
+```{r fig.width=15, message=FALSE, warning=FALSE}
+#a-v profiling
+  FV <- playerss %>% 
+  filter(Team == "1610612765") %>% #filter pistons only
+  arrange(Player, quarter, event_id, -game_clock) %>% 
+  filter(game_clock < 720) %>% #remove a lot of static time at the start of each quarter
+ 
+  #this chunks cleans some overlaps where the same time stamp is present for more than one event
+  select(Player, quarter, event_id, game_clock, x, y) %>%
+  arrange(Player, quarter, event_id, -game_clock) %>%
+  group_by(Player, quarter, event_id, game_clock) %>%
+  summarise(x = mean(x), y = mean(y)) %>%
+  arrange(-game_clock) %>%
+  group_by(Player, quarter, game_clock) %>%
+  summarise(x = mean(x), y = mean(y)) %>%
+  arrange(Player, quarter, -game_clock) %>% 
+  
+  #calculate metrics (ACC + vel) and smooth them to n frames
+  group_by(Player, quarter) %>%
+  mutate(diffx = c(NA, diff(x)), diffy = c(NA, diff(y))) %>%
+  filter(diffx < abs(1) & diffy < abs(1)) %>% #removes big jumps in distance
+  mutate(diffx2 = diffx ^ 2, diffy2 = diffy ^ 2) %>%
+  mutate(total2 = diffx2 + diffy2) %>%
+  mutate(`vel (f/s)` = sqrt(total2) / 0.04) %>%
+  select(Player, quarter, game_clock, x, y, `vel (f/s)`) %>%
+  mutate(ACC = c(NA, diff(`vel (f/s)`))) %>%
+  mutate(ACC = ACC / 0.04) %>%
+  mutate(vel = `vel (f/s)` * 0.3048, acc =  ACC * 0.3048) %>%
+  filter(acc > 0 & acc < 10) %>%
+  filter(vel > 0 & vel < 10) %>%
+  mutate(mov.vel = zoo::rollapply(vel, 25, mean, fill = NA), mov.acc = zoo::rollapply(acc, 25, mean, fill = NA))
+
+  #find top n accelerations for the game and calculate average
+  FV.fit.a <- FV %>%
+    ungroup() %>%
+    group_by(Player) %>%
+    select(Player, mov.vel, mov.acc) %>%
+    slice_max(mov.acc, prop = .01) %>%
+    summarise(x = mean(mov.vel), y = mean(mov.acc)) %>%
+    mutate(type = "acc")
+   
+  #find top n velos for game an calculate average
+  FV.fit.v <- FV %>%
+    ungroup() %>%
+    select(Player, mov.vel, mov.acc) %>%
+    group_by(Player) %>%
+    slice_max(mov.vel, prop = .01) %>%
+    summarise(x = mean(mov.vel), y = mean(mov.acc)) %>%
+    mutate(type = "vel")
+  
+  #join both to create x,y coordinates to fit linear regression
+  FV.fit <- full_join(FV.fit.a, FV.fit.v)
+  
+  #create plot
+  ggplot(data = FV.fit, aes(x,y)) +
+  geom_point(data = FV, aes(mov.vel, mov.acc), alpha = 0.1, color = "red", shape = 21) +
+  geom_point(shape = 21, color = "blue", size = 5) +
+  stat_smooth(method="lm", fullrange = TRUE) +
+  coord_cartesian(expand = FALSE) + 
+  scale_x_continuous(limits=c(0, 10), breaks = c(0,1,2,3,4,5,6,7,8,9,10)) +
+  scale_y_continuous(limits=c(0, 10), breaks = c(0,1,2,3,4,5,6,7,8,9,10)) +
+  labs(title = "Detroit Piston's Game A-V Profiles", subtitle = "A-V Profile using top .01 ACC & Vel efforts \n",
+  y = "ACC (m/s/s)", x = "vel (m/s)") +
+  facet_wrap(~Player, scales = "free") +
+    theme(plot.subtitle = element_text(color = "gray30"),
+          panel.grid = element_blank(),
+          axis.text = element_text(size = 8, color = "gray"),
+          axis.ticks = element_blank()) 
+  
+```
